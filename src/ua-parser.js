@@ -7,7 +7,22 @@
  * Dual licensed under GPLv2 or MIT
  */
 
-(function (window, undefined) {
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define([], function () {
+            return (root.returnExportsGlobal = factory());
+        });
+    } else if (typeof module === 'object' && module.exports) {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like environments that support module.exports,
+        // like Node.
+        module.exports = factory();
+    } else {
+        // Browser globals
+        root.returnExportsGlobal = factory();
+    }
+}(typeof self !== 'undefined' ? self : this, function () {
 
     'use strict';
 
@@ -1044,74 +1059,8 @@
     // Export
     //////////
 
-
-    // check js environment
-    if (typeof(exports) !== UNDEF_TYPE) {
-        // nodejs env
-        if (typeof module !== UNDEF_TYPE && module.exports) {
-            exports = module.exports = UAParser;
-        }
-        // TODO: test!!!!!!!!
-        /*
-        if (require && require.main === module && process) {
-            // cli
-            var jsonize = function (arr) {
-                var res = [];
-                for (var i in arr) {
-                    res.push(new UAParser(arr[i]).getResult());
-                }
-                process.stdout.write(JSON.stringify(res, null, 2) + '\n');
-            };
-            if (process.stdin.isTTY) {
-                // via args
-                jsonize(process.argv.slice(2));
-            } else {
-                // via pipe
-                var str = '';
-                process.stdin.on('readable', function() {
-                    var read = process.stdin.read();
-                    if (read !== null) {
-                        str += read;
-                    }
-                });
-                process.stdin.on('end', function () {
-                    jsonize(str.replace(/\n$/, '').split('\n'));
-                });
-            }
-        }
-        */
-        exports.UAParser = UAParser;
-    } else {
-        // requirejs env (optional)
-        if (typeof(define) === FUNC_TYPE && define.amd) {
-            define(function () {
-                return UAParser;
-            });
-        } else if (window) {
-            // browser env
-            window.UAParser = UAParser;
-        }
-    }
-
-    // jQuery/Zepto specific (optional)
-    // Note:
-    //   In AMD env the global scope should be kept clean, but jQuery is an exception.
-    //   jQuery always exports to global scope, unless jQuery.noConflict(true) is used,
-    //   and we should catch that.
-    var $ = window && (window.jQuery || window.Zepto);
-    if (typeof $ !== UNDEF_TYPE && !$.ua) {
-        var parser = new UAParser();
-        $.ua = parser.getResult();
-        $.ua.get = function () {
-            return parser.getUA();
-        };
-        $.ua.set = function (uastring) {
-            parser.setUA(uastring);
-            var result = parser.getResult();
-            for (var prop in result) {
-                $.ua[prop] = result[prop];
-            }
-        };
-    }
-
-})(typeof window === 'object' ? window : this);
+    // Just return a value to define the module export.
+    // This example returns an object, but the module
+    // can return a function as the exported value.
+    return UAParser;
+}));
